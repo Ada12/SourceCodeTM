@@ -1,0 +1,49 @@
+.tablePos {
+/*text-align:center;*/
+    margin: 5px;
+}
+
+.hColor{
+    /*color: #FF0000;*/
+    color: #7CB5EC;
+}
+
+.cColor{
+    /*color: #0000FF;*/
+    color: #5C5C61;
+}
+
+.lColor{
+    /*color: #99FF00;*/
+    color: #90ED7D;
+}
+
+.iconColor{
+    color: #FF9933;
+    margin-left: 5px;
+}
+
+.controlPos{
+    width: 400px;
+    height: 250px;
+    /*float: left;*/
+    margin: 20px;
+}
+
+.tablePos{
+    margin-top: 20px;
+    margin-left: 100px;
+}
+
+.mslider{
+    width: 200px;
+    margin: 30px auto 5px auto;
+}
+
+.ntablePos{
+    margin-top: 20px;
+}
+
+.myTh{
+    color:#337ab7;
+}
