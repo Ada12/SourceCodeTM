@@ -326,9 +326,36 @@ public class MainController {
             weight.put("title", xml.get(2).get(i));
             topicWeight.add(weight);
         }
+//wordsArray 1.1.1 shows the 1st topic, the 1st phrase, the 0 words(there is a blank before all the words)
+        Map<String, List<String>> wordsArray = new HashMap<String, List<String>>();
+        List<String> wordsList = new ArrayList<String>();
+        for(int j = 0; j < xml.get(2).size(); j ++){
+            String[] phrase = xml.get(2).get(j).toString().split("\\,");
+            for(int k = 0; k < phrase.length; k ++){
+                if((!phrase[k].equals(" "))&&(!phrase[k].equals(""))){
+                    String[] words = phrase[k].split(" ");
+                    for(int m = 0; m < words.length; m ++){
+                        if((!words[m].equals(" "))&&(!words[m].equals(""))){
+                            String pos = j + "." + k + "." + m;
+                            List<String> position = wordsArray.get(words[m]);
+                            if(position != null){
+                                position.add(pos);
+                                wordsArray.put(words[m],position);
+                            }else{
+                                List<String> p = new ArrayList<String>();
+                                p.add(pos);
+                                wordsArray.put(words[m], p);
+                            }
+                            wordsList.add(words[m]);
+                        }
+                    }
+                }
+            }
+        }
+        List<String> wordsListUnique = GetClassTopic.removeDuplicate(wordsList);
+
         Map<String, Object> result = new HashMap<String, Object>();
         result.put("children", topicWeight);
-
         HttpHeaders headers = new HttpHeaders();
         headers.add("Access-Control-Allow-Credentials", "true");
         headers.add("Access-Control-Allow-Origin", "http://localhost:8080");
