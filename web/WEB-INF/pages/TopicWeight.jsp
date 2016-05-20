@@ -65,6 +65,20 @@
     </div>
     <br/>
     <br/>
+    <br/>
+    <br/>
+    <table class="table table-bordered">
+        <tbody>
+        <tr>
+            <td class="myTh">Topic Evaluation</td>
+            <td id="evaluate"></td>
+        </tr>
+        <tr>
+            <td class="myTh">Topic Zeri Rate</td>
+            <td id="zeroRate"></td>
+        </tr>
+        </tbody>
+    </table>
 </div>
 
 <script>
@@ -122,7 +136,7 @@
                     .attr("onclick",function(d){
                         ///////////////////////////////////////
                         //return "window.location.href= 'http://10.60.42.62:8001/classTopic/"+content[4] + "/" + content[5]+"'";
-                        return "window.location.href= 'http://localhost:8080/classTopic/"+ nt + "/" + number +"'";
+                        return "window.location.href= 'http://localhost:8080/stackMWE/"+ nt + "/" + number +"/0'";
                         //return  '$("#topicContent").val = d.title';
                     })
                     .attr("onmousemove", function (d) {
@@ -202,11 +216,14 @@
             var detail = response.children;
             for(var i = 0; i < detail.length; i ++){
                 var $panel = $('<tr>\
-                <th>'+detail[i]["name"]+'</th>\
+                <th class="myTh">'+detail[i]["name"]+'</th>\
                 <td>'+ detail[i]["title"] +'</td>\
+                <td>'+ detail[i]["simple"] +'</td> \
                 </tr>');
                 $panel.appendTo($("#tbody"));
             }
+            document.getElementById("evaluate").innerHTML = response.allEva;
+            document.getElementById("zeroRate").innerHTML = response.zeroRate;
         });
 
     }

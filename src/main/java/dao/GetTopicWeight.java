@@ -22,10 +22,10 @@ public class GetTopicWeight {
         DocumentBuilder builder = dFactory.newDocumentBuilder();
         Document doc = builder.parse(inputFile);
         doc.getDocumentElement().normalize();
-        System.out.println("Root element :"
-                + doc.getDocumentElement().getNodeName());
+//        System.out.println("Root element :"
+//                + doc.getDocumentElement().getNodeName());
         NodeList nList = doc.getElementsByTagName("topic");
-        System.out.println("----------------------------");
+//        System.out.println("----------------------------");
         for (int i = 0; i < nList.getLength(); i++) {
             Node nNode = nList.item(i);
             Element eElement = (Element) nNode;

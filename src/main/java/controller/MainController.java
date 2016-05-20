@@ -3,15 +3,20 @@ package controller;
 import dao.CalculateMWE;
 import dao.GetClassTopic;
 import dao.GetTopicWeight;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.context.WebApplicationContext;
 import org.xml.sax.SAXException;
 
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
@@ -22,6 +27,9 @@ import java.util.*;
  */
 @Controller
 public class MainController {
+    @Autowired
+    ServletContext context;
+
     @RequestMapping(value = "class/{topicNum}/{classId}", method = RequestMethod.GET)
     public String getMain() {
         return "class";
@@ -77,6 +85,7 @@ public class MainController {
         Map<String, Object> result = new HashMap<String, Object>();
         String folder;
         String filePath;
+//        String abPath = System.getProperty("user.dir");
         if("0".equalsIgnoreCase(topicType)){
             // 0 is full
             folder = "tomcat";
@@ -91,7 +100,9 @@ public class MainController {
             filePath = "/home/yangchen/ycdoc/topicModel/basedOnTribes/tribes" + topicNum + "/";
         }
         File[] filePaths = new File(filePath).listFiles();
-        List<Map<String, Object>> listMwe = new ArrayList<Map<String, Object>>();
+        List<Map<String, String>> listMwe = new ArrayList<Map<String, String>>();
+        List<Integer> highList = new ArrayList<Integer>();
+        List<Integer> lowList = new ArrayList<Integer>();
         for(int i = 0; i < filePaths.length; i ++){
             CalculateMWE calculateMWE = new CalculateMWE();
             double[] weRate = calculateMWE.getMWE(filePaths[i].getAbsolutePath(), Integer.parseInt(topicNum));
@@ -124,25 +135,157 @@ public class MainController {
                 }
             }
             String[] module = filePaths[i].getAbsolutePath().split("\\/|\\.");
-            Map<String, Object> mwe = new HashMap<String, Object>();
+            Map<String, String> mwe = new HashMap<String, String>();
             mwe.put("module", module[7]);
+
             int end = 0;
-            for(int q = 0; q < 4; q++){
-                if(weRate[q]/weRate[q+1] < 10){
+            for(int q = 0; q < weRate.length-1; q++){
+//                if(weRate[q]/weRate[q+1] < 10){
+                if(weRate[q]> weRate[0]/10){
                     end = q;
                 }else {
                     break;
                 }
             }
-            String wer = "";
+            String weh = "";
             for(int o = 0; o < end+1; o ++){
-                wer = wer + index[o] + ",";
+                weh = weh + index[o] + ",";
+                highList.add(index[o]);
             }
-            mwe.put("topic", wer);
+            mwe.put("begin", weh);
+
+            int begin = 0;
+            for(int r = weRate.length-1; r > 0; r--){
+                if(weRate[r-1]/weRate[r] < 10){
+//                if(weRate[r-1] < weRate[weRate.length-1]*10){
+                    begin = r;
+                }else {
+                    break;
+                }
+            }
+            String wel = "";
+            for(int o = index.length-1; o > index.length-begin-2; o --){
+                wel = wel + index[o] + ",";
+                lowList.add(index[o]);
+            }
+            mwe.put("end", wel);
+
 //            mwe.put("rates", weRate);
             listMwe.add(mwe);
         }
-        result.put("result", listMwe);
+
+        Map<Integer, String> color = new HashMap<Integer, String>();
+//        color.put(1, "#FFFFCC");
+//        color.put(2, "#FFFF99");
+//        color.put(3, "#FFFF66");
+//        color.put(4, "#FFFF33");
+//        color.put(5, "#FFFF00");
+//        color.put(6, "#FFCC00");
+//        color.put(7, "#FF9900");
+//        color.put(8, "#FF6600");
+//        color.put(9, "#FF3300");
+//        color.put(10, "#FF0000");
+
+//        color.put(1, "#FFFFCC");
+//        color.put(2, "#FFCCFF");
+//        color.put(3, "#FFCCCC");
+//        color.put(4, "#FFCC99");
+//        color.put(5, "#FF99CC");
+//        color.put(6, "#FF9999");
+//        color.put(7, "#FF9966");
+//        color.put(8, "#FF6699");
+//        color.put(9, "#FF6666");
+//        color.put(10, "#FF6633");
+//        color.put(11, "#FF3333");
+//        color.put(12, "#FF3300");
+
+        color.put(1, "#FFCCFF");
+        color.put(2, "#FF99FF");
+        color.put(3, "#FF66FF");
+        color.put(4, "#FF33FF");
+        color.put(5, "#FF00FF");
+        color.put(6, "#FF00CC");
+        color.put(7, "#FF0099");
+        color.put(8, "#FF0066");
+        color.put(9, "#FF0033");
+        color.put(10, "#FF0000");
+
+        Map<Integer, String> lowColor = new HashMap<Integer, String>();
+        lowColor.put(1, "#33FFFF");
+        lowColor.put(2, "#33CCFF");
+        lowColor.put(3, "#3399FF");
+        lowColor.put(4, "#3366FF");
+        lowColor.put(5, "#3333FF");
+        lowColor.put(6, "#33FFCC");
+        lowColor.put(7, "#33CCCC");
+        lowColor.put(8, "#3399CC");
+        lowColor.put(9, "#3366CC");
+        lowColor.put(10, "#3333CC");
+        lowColor.put(11, "#3300CC");
+        lowColor.put(12, "#339999");
+        lowColor.put(13, "#336699");
+        lowColor.put(14, "#333399");
+        lowColor.put(15, "#330099");
+        lowColor.put(16, "#336666");
+        lowColor.put(17, "#333366");
+        lowColor.put(18, "#330066");
+        lowColor.put(19, "#333333");
+        lowColor.put(20, "#330033");
+        lowColor.put(21, "#330000");
+        lowColor.put(22, "#003300");
+        lowColor.put(23, "#000033");
+        lowColor.put(24, "#000000");
+
+        Map<Integer, Integer> highKey = new HashMap<Integer, Integer>();
+        Map<Integer, Integer> lowKey = new HashMap<Integer, Integer>();
+        for(int i = 0; i < highList.size(); i ++){
+            Integer h = highKey.get(highList.get(i));
+            if(h != null){
+                highKey.put(highList.get(i), h+1);
+            }else{
+                highKey.put(highList.get(i), 1);
+            }
+        }
+        for (int j = 0; j < lowList.size(); j ++){
+            Integer l = lowKey.get(lowList.get(j));
+            if(l != null){
+                lowKey.put(lowList.get(j), l+1);
+            }else {
+                lowKey.put(lowList.get(j), 1);
+            }
+        }
+        List<Map<String, Object>> newListMwe = new ArrayList<Map<String, Object>>();
+        for(int k = 0; k < listMwe.size(); k ++){
+            Map<String, Object> nlm = new HashMap<String, Object>();
+            String module = listMwe.get(k).get("module");
+            String begin = listMwe.get(k).get("begin");
+            String end = listMwe.get(k).get("end");
+            List<Map<String, String>> newBegin = new ArrayList<Map<String, String>>();
+            String[] b = begin.split("\\,");
+            for(int i = 0; i < b.length; i ++){
+                Map<String, String> nb = new HashMap<String, String>();
+                nb.put("topic", b[i]);
+                Integer countH = highKey.get(Integer.valueOf(b[i]));
+                nb.put("color", color.get(countH));
+                newBegin.add(nb);
+            }
+            List<Map<String, String>> newEnd = new ArrayList<Map<String, String>>();
+            String[] e = end.split("\\,");
+            for(int j = 0; j < e.length; j ++){
+                Map<String, String> ne = new HashMap<String, String>();
+                ne.put("topic", e[j]);
+                Integer countE = lowKey.get(Integer.valueOf(e[j]));
+                ne.put("color", lowColor.get(countE));
+                newEnd.add(ne);
+            }
+            nlm.put("module", module);
+            nlm.put("begin", newBegin);
+            nlm.put("end", newEnd);
+            newListMwe.add(nlm);
+        }
+
+
+        result.put("result", newListMwe);
         HttpHeaders headers = new HttpHeaders();
         headers.add("Access-Control-Allow-Credentials", "true");
         headers.add("Access-Control-Allow-Origin", "http://localhost:8080");
@@ -154,6 +297,7 @@ public class MainController {
         Map<String, Object> result = new HashMap<String, Object>();
         String folder;
         String filePath;
+//        String abPath = System.getProperty("user.dir");
         if("0".equalsIgnoreCase(topicType)){
             // 0 is full
             folder = "tomcat";
@@ -288,7 +432,10 @@ public class MainController {
         }else{
             folder = "tribes";
         }
-        List<List> xml = GetTopicWeight.getNames("/usr/local/mallet-2.0.7/"+ folder + "/" + folder + topicNum +"/topic-phrases.xml");
+//        String abPath = System.getProperty("user.dir");
+//        String filePathXml = abPath + "/topicModel/" + folder + "Xml/topic-phrases"+ topicNum +".xml";
+        String filePathXml = "/usr/local/mallet-2.0.7/" + folder + "/" + folder + topicNum + "/topic-phrases.xml";
+        List<List> xml = GetTopicWeight.getNames(filePathXml);
         Map<String, Object> topicSimple = new HashMap<String, Object>();
         for(int i = 0; i < xml.get(0).size(); i ++){
             if(i == Integer.parseInt(topicId)){
@@ -304,7 +451,9 @@ public class MainController {
     }
 
     @RequestMapping(value = "json/topicWeight/{topicType}/{topicNum}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> getJsonTopicWeight(@PathVariable("topicType") String topicType, @PathVariable("topicNum") String topicNum) throws IOException, SAXException, ParserConfigurationException {
+    public ResponseEntity<Map<String, Object>> getJsonTopicWeight(@PathVariable("topicType") String topicType, @PathVariable("topicNum") String topicNum, HttpServletRequest request) throws IOException, SAXException, ParserConfigurationException {
+//        String test = context.getRealPath("/");
+
         List<Map<String, Object>> topicWeight = new ArrayList<Map<String, Object>>();
         String folder;
         if("0".equalsIgnoreCase(topicType)){
@@ -317,20 +466,23 @@ public class MainController {
             folder = "tribes";
         }
 
-        List<List> xml = GetTopicWeight.getNames("/usr/local/mallet-2.0.7/"+ folder + "/" + folder + topicNum +"/topic-phrases.xml");
+//        String abPath = System.getProperty("user.dir");
+//        String filePathXml = abPath + "/topicModel/" + folder + "Xml/topic-phrases"+ topicNum +".xml";
+        String filePathXml = "/usr/local/mallet-2.0.7/" + folder + "/" + folder + topicNum + "/topic-phrases.xml";
+        List<List> xml = GetTopicWeight.getNames(filePathXml);
 
-        for(int i = 0; i < xml.get(0).size(); i ++){
-            Map<String, Object> weight = new HashMap<String, Object>();
-            weight.put("name", xml.get(0).get(i));
-            weight.put("weight", xml.get(1).get(i));
-            weight.put("title", xml.get(2).get(i));
-            topicWeight.add(weight);
-        }
-//wordsArray 1.1.1 shows the 1st topic, the 1st phrase, the 0 words(there is a blank before all the words)
+        //wordsArray 1.1.1 shows the 1st topic, the 1st phrase, the 0 words(there is a blank before all the words)
         Map<String, List<String>> wordsArray = new HashMap<String, List<String>>();
         List<String> wordsList = new ArrayList<String>();
+        int[] singlePhraseCount = new int[Integer.valueOf(topicNum)];
         for(int j = 0; j < xml.get(2).size(); j ++){
-            String[] phrase = xml.get(2).get(j).toString().split("\\,");
+            String topicContent = xml.get(2).get(j).toString().trim();
+            String[] phrase = topicContent.split("\\,");
+            if(topicContent.charAt(topicContent.length()-1) == ','){
+                singlePhraseCount[j] = phrase.length -1;
+            }else{
+                singlePhraseCount[j] = phrase.length;
+            }
             for(int k = 0; k < phrase.length; k ++){
                 if((!phrase[k].equals(" "))&&(!phrase[k].equals(""))){
                     String[] words = phrase[k].split(" ");
@@ -352,172 +504,87 @@ public class MainController {
                 }
             }
         }
+        int wordsLength = wordsList.size();
         List<String> wordsListUnique = GetClassTopic.removeDuplicate(wordsList);
+        double all = 0.0;
+        double[] single = new double[Integer.valueOf(topicNum)];
+        for(int n = 0; n < Integer.valueOf(topicNum); n ++){
+            single[n] = 0.0;
+        }
+        for(int a = 0; a < wordsListUnique.size(); a ++){
+            List<String> simplePosition = wordsArray.get(wordsListUnique.get(a));
+            Map<String, List<String>> wordsAllResult = new HashMap<String, List<String>>();
+            List<String> keysAll = new ArrayList<String>();
+            for(int b = 0; b < simplePosition.size(); b ++){
+                String[] contentAll = simplePosition.get(b).split("\\.");
+                List<String> topicIDPos = wordsAllResult.get(contentAll[0]);
+                if(topicIDPos != null){
+                    topicIDPos.add(simplePosition.get(b));
+                    wordsAllResult.put(contentAll[0], topicIDPos);
+                }else{
+                    List<String> tip = new ArrayList<String>();
+                    tip.add(simplePosition.get(b));
+                    wordsAllResult.put(contentAll[0], tip);
+                    keysAll.add(contentAll[0]);
+                }
+            }
+            all = all + wordsAllResult.size() - 1;
+            for(int c = 0; c < keysAll.size(); c++){
+                List<String> tpPos = wordsAllResult.get(keysAll.get(c));
+                Map<String, List<String>> wordsSimpleResult = new HashMap<String, List<String>>();
+                if(tpPos.size() > 1) {
+                    for (int d = 0; d < tpPos.size(); d++) {
+                        String[] contentSimple = tpPos.get(d).split("\\.");
+                        List<String> phraseIDPos = wordsSimpleResult.get(contentSimple[1]);
+                        if (phraseIDPos != null) {
+                            phraseIDPos.add(simplePosition.get(d));
+                            wordsSimpleResult.put(contentSimple[1], phraseIDPos);
+                        } else {
+                            List<String> pip = new ArrayList<String>();
+                            pip.add(simplePosition.get(d));
+                            wordsSimpleResult.put(contentSimple[1], pip);
+                        }
+                    }
+                }
+                //if tpPos.size >1 and the result = 1, that is the words are in the same phrase, just calculate it as 1
+                int mi = Integer.valueOf(keysAll.get(c));
+                if(wordsSimpleResult.size() == 1){
+                    single[mi] = single[mi] + 1;
+                }else if(wordsSimpleResult.size() == 0){
+                    single[mi] = single[mi] + wordsSimpleResult.size();
+                }else{
+                    single[mi] = single[mi] + wordsSimpleResult.size() - 1;
+                }
+            }
+        }
+
+        double zero = 0;
+        for(int i = 0; i < xml.get(0).size(); i ++){
+            Map<String, Object> weight = new HashMap<String, Object>();
+            weight.put("name", xml.get(0).get(i));
+            weight.put("weight", xml.get(1).get(i));
+            weight.put("title", xml.get(2).get(i));
+            double simpleR = single[i]/singlePhraseCount[i];
+            String simpleRS = "";
+            if(simpleR == 0.0){
+                simpleRS = "0";
+                zero = zero + 1;
+            }else{
+                simpleRS = String.format("%.3f",simpleR);
+            }
+            weight.put("simple", simpleRS);
+            topicWeight.add(weight);
+        }
 
         Map<String, Object> result = new HashMap<String, Object>();
         result.put("children", topicWeight);
+        result.put("allEva", all/wordsLength);
+        result.put("zeroRate", zero/Integer.valueOf(topicNum));
         HttpHeaders headers = new HttpHeaders();
         headers.add("Access-Control-Allow-Credentials", "true");
         headers.add("Access-Control-Allow-Origin", "http://localhost:8080");
         return new ResponseEntity<Map<String, Object>>(result, headers, HttpStatus.OK);
 
-    }
-
-    @RequestMapping(value = "json/catalina/{topicNum}/{classId}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> getCatalinaMWE(@PathVariable("topicNum") String topicNum, @PathVariable("classId") String classId) throws IOException {
-        Map<String, Object> result = new HashMap<String, Object>();
-        Map<String, String> we = new HashMap<String, String>();
-        Map<String, String> keyNames = new HashMap<String, String>();
-        keyNames.put("0", "0");
-        keyNames.put("1", "ant");
-        keyNames.put("2", "authenticator");
-        keyNames.put("3", "comet");
-        keyNames.put("4", "connector");
-        keyNames.put("5", "core");
-        keyNames.put("6", "deploy");
-        keyNames.put("7", "filters");
-        keyNames.put("8", "ha");
-        keyNames.put("9", "loader");
-        keyNames.put("10", "manager");
-        keyNames.put("11", "mbeans");
-        keyNames.put("12", "realm");
-        keyNames.put("13", "security");
-        keyNames.put("14", "servlets");
-        keyNames.put("15", "session");
-        keyNames.put("16", "ssi");
-        keyNames.put("17", "startup");
-        keyNames.put("18", "tribes");
-        keyNames.put("19", "users");
-        keyNames.put("20", "util");
-        keyNames.put("21", "valves");
-        keyNames.put("22", "websocket");
-        String className = keyNames.get(classId);
-        // origin -> cataModuleResult
-        String filePath = "/home/yangchen/ycdoc/cataModuleNewResult/topic" + topicNum + "/" + className + ".txt";
-        CalculateMWE calculateMWE = new CalculateMWE();
-        double[] weRate = calculateMWE.getMWE(filePath, Integer.parseInt(topicNum));
-        String wer = "";
-        for (int i = 0; i < weRate.length; i++) {
-            wer = wer + weRate[i] + ",";
-        }
-        wer.substring(0, wer.length()-1);
-        we.put("classId", className);
-        we.put("rates", wer);
-        result.put("Code", 0);
-        result.put("Msg", "Success");
-        result.put("result", we);
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Access-Control-Allow-Credentials", "true");
-        headers.add("Access-Control-Allow-Origin", "http://localhost:8080");
-        return new ResponseEntity<Map<String, Object>>(result, headers, HttpStatus.OK);
-    }
-
-    @RequestMapping(value = "json/class/{topicNum}/{classId}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> getMWE(@PathVariable("topicNum") String topicNum, @PathVariable("classId") String classId) throws IOException {
-        Map<String, Object> result = new HashMap<String, Object>();
-        Map<String, String> we = new HashMap<String, String>();
-        String filePath = "/home/yangchen/tomcatTempData/temp" + topicNum + "/" + classId + ".txt";
-        CalculateMWE calculateMWE = new CalculateMWE();
-        double[] weRate = calculateMWE.getMWE(filePath, Integer.parseInt(topicNum));
-        String wer = "";
-        for (int i = 0; i < weRate.length; i++) {
-            wer = wer + weRate[i] + ",";
-        }
-        wer.substring(0, wer.length()-1);
-        we.put("classId", classId);
-        we.put("rates", wer);
-        result.put("Code", 0);
-        result.put("Msg", "Success");
-        result.put("result", we);
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Access-Control-Allow-Credentials", "true");
-        headers.add("Access-Control-Allow-Origin", "http://localhost:8080");
-        return new ResponseEntity<Map<String, Object>>(result, headers, HttpStatus.OK);
-    }
-
-    @RequestMapping(value = "json/topic/{topicNum}", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> getTopicRate(@PathVariable("topicNum") String topicNum) throws IOException {
-        Map<String, Object> result = new HashMap<String, Object>();
-        Map<String, String> we = new HashMap<String, String>();
-        String mwe = "";
-        for(int i=0; i < Integer.parseInt(topicNum); i++){
-            String filePath = "/home/yangchen/tomcatTempData/temp"+ topicNum +"/" + i + ".txt";
-            CalculateMWE calculateMWE = new CalculateMWE();
-            double[] weRate = calculateMWE.getMWE(filePath, Integer.parseInt(topicNum));
-            double flag = weRate[0];
-            for(int j=1; j < weRate.length; j++){
-                if(weRate[j] > flag){
-                    flag = weRate[j];
-                }
-            }
-            mwe = mwe + String.valueOf(flag) + ",";
-        }
-        we.put("classId", topicNum);
-        we.put("rates", mwe);
-        result.put("Code", 0);
-        result.put("Msg", "Success");
-        result.put("result", we);
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Access-Control-Allow-Credentials", "true");
-        headers.add("Access-Control-Allow-Origin", "http://localhost:8080");
-        return new ResponseEntity<Map<String, Object>>(result, headers, HttpStatus.OK);
-    }
-
-
-    @RequestMapping(value = "json/square", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> getSquareRate() throws IOException {
-        Map<String, Object> result = new HashMap<String, Object>();
-        Map<String, String> we = new HashMap<String, String>();
-        String mwe = "";
-        for(int n = 10; n < 101; n=n+10){
-            double[] max = new  double[n];
-            for(int i=0; i < n; i++){
-                String filePath = "/home/yangchen/tomcatTempData/temp"+ n +"/" + i + ".txt";
-                CalculateMWE calculateMWE = new CalculateMWE();
-                double[] weRate = calculateMWE.getMWE(filePath, n);
-                double flag = weRate[0];
-                for(int j=1; j < weRate.length; j++){
-                    if(weRate[j] > flag){
-                        flag = weRate[j];
-                    }
-                }
-                //calculate max
-                max[i] = flag;
-            }
-            double avg = 0.0;
-            for(int j = 0; j<n; j++){
-                avg = avg + max[j];
-            }
-            double navg = avg/n;
-            double square = 0.0;
-            for(int k = 0; k < n; k++){
-                square = square + Math.pow(max[k]-navg, 2);
-            }
-            mwe = mwe + square/n + ",";
-        }
-        we.put("rates", mwe);
-        result.put("Code", 0);
-        result.put("Msg", "Success");
-        result.put("result", we);
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Access-Control-Allow-Credentials", "true");
-        headers.add("Access-Control-Allow-Origin", "http://localhost:8080");
-        return new ResponseEntity<Map<String, Object>>(result, headers, HttpStatus.OK);
-    }
-
-    @RequestMapping(value = "json/rtc", method = RequestMethod.GET)
-    public ResponseEntity<Map<String, Object>> getRtcRate() throws IOException {
-        Map<String, Object> result = new HashMap<String, Object>();
-        Map<String, String> we = new HashMap<String, String>();
-        String mwe = "0.1,0.05,0.033,0.025,0.02,0.017,0.0143,0.0125,0.011,0.01";
-        we.put("rates", mwe);
-        result.put("Code", 0);
-        result.put("Msg", "Success");
-        result.put("result", we);
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Access-Control-Allow-Credentials", "true");
-        headers.add("Access-Control-Allow-Origin", "http://localhost:8080");
-        return new ResponseEntity<Map<String, Object>>(result, headers, HttpStatus.OK);
     }
 
 }

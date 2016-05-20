@@ -19,8 +19,16 @@
 <script language="JavaScript" src="/js/chart/highcharts.js"></script>
 <script language="JavaScript" src="/js/chart/exporting.js"></script>
 <div id="container" style="height: 537px; margin: 0px auto"></div>
+<div class="col-lg-12">
+    <div class="col-lg-4"></div>
+    <div class="col-lg-1"><a href="http://localhost:8080/topicWeight"><span class="glyphicon glyphicon-arrow-left myTh back"></span></a></div>
+    <div class="col-lg-2"></div>
+    <div class="col-lg-1"><a id="go"><span class="glyphicon glyphicon-arrow-right myTh back"></span></a></div>
+    <div class="col-lg-4"></div>
+</div>
 <div id="tablePos" class="col-lg-10 tablePos"></div>
-<div id="topicTable" class="col-lg-10 tablePos"></div>
+<div id="highTopicTable" class="col-lg-10 tablePos"></div>
+<div id="lowTopicTable" class="col-lg-10 tablePos"></div>
 <script type="text/javascript">
     function getResult(){
         var url = window.location.href;
@@ -143,7 +151,7 @@
                 }
             }
             chart.addSeries({
-                name: 'low',
+                name: 'MWE',
                 data: data,
                 type: 'spline'
             })
@@ -168,19 +176,72 @@
                     <tbody id="bodytr">\
                     </tbody>\
                     </table>');
-        $tb.appendTo($("#topicTable"));
+        $tb.appendTo($("#highTopicTable"));
+
+        var $ntb = $('<table class="table table-bordered">\
+                    <tbody id="nbodytr">\
+                    </tbody>\
+                    </table>');
+        $ntb.appendTo($("#lowTopicTable"));
         $.get(urlSend, {Action: "get", Name: "yc"}, function (response, textStatus) {
             var detail = response.result;
-            var n = detail.length/9;
+
+            var nn = Math.floor(detail.length/3);
+            for(var a = 0; a < nn; a ++){
+                var $ntr1 = $('<tr id="nmytr1'+ a +'"></tr>');
+                var $ntr2 = $('<tr id="nmytr2'+ a +'"></tr>');
+                $ntr1.appendTo($("#nbodytr"));
+                $ntr2.appendTo($("#nbodytr"));
+                for(var i=3*a; i < 3*(a+1); i++){
+                    var $nmthead = $('<th class="myTh"><a href="http://localhost:8080/stackMWE/'+ content[4]+ '/' +content[5] +'/'+ detail[i]["module"] +'">'+ detail[i]["module"] +'</a></th>');
+                    $nmthead.appendTo($("#nmytr1"+a));
+                    var $nmth = $('<td></td>');
+                    for(var j = 0; j < detail[i]["end"].length; j++){
+                        var $nmsp = $('<span style="background-color: '+ detail[i]["end"][j]["color"] +'; color: #FFFFFF">'+ detail[i]["end"][j]["topic"] +'</span>&nbsp;');
+                        var $ncomma = $('<span>,</span>');
+                        $nmsp.appendTo($nmth);
+                        $ncomma.appendTo($nmth);
+                    }
+//                    var $mth = $('<td>'+ detail[i]["begin"] +'</td>');
+                    $nmth.appendTo($("#nmytr2"+a));
+                }
+            }
+            var $ntr1 = $('<tr id="nmytr1end"></tr>');
+            var $ntr1 = $('<tr id="nmytr2end"></tr>');
+            $ntr1.appendTo($("#nbodytr"));
+            $ntr2.appendTo($("#nbodytr"));
+            for(var i=n*3; i < detail.length; i++){
+                var $nmthead = $('<th class="myTh"><a href="http://localhost:8080/stackMWE/'+ content[4]+ '/' +content[5] +'/'+ detail[i]["module"] +'">'+ detail[i]["module"] +'</a></th>');
+                $nmthead.appendTo($("#nmytr1end"));
+                var $nmth = $('<td></td>');
+                for(var j = 0; j < detail[i]["end"].length; j++){
+                    var $nmsp = $('<span style="background-color: '+ detail[i]["end"][j]["color"] +'; color: #FFFFFF">'+ detail[i]["end"][j]["topic"] +'</span>&nbsp;');
+                    var $ncomma = $('<span>,</span>');
+                    $nmsp.appendTo($nmth);
+                    $ncomma.appendTo($nmth);
+                }
+//                var $mth = $('<td>'+ detail[i]["begin"] +'</td>');
+                $nmth.appendTo($("#nmytr2end"));
+            }
+
+
+            var n = Math.floor(detail.length/9);
             for(var a = 0; a < n; a ++){
                 var $tr1 = $('<tr id="mytr1'+ a +'"></tr>');
                 var $tr2 = $('<tr id="mytr2'+ a +'"></tr>');
                 $tr1.appendTo($("#bodytr"));
                 $tr2.appendTo($("#bodytr"));
                 for(var i=9*a; i < 9*(a+1); i++){
-                    var $mthead = $('<th class="myTh">'+ detail[i]["module"] +'</th>');
+                    var $mthead = $('<th class="myTh"><a href="http://localhost:8080/stackMWE/'+ content[4]+ '/' +content[5] +'/'+ detail[i]["module"] +'">'+ detail[i]["module"] +'</a></th>');
                     $mthead.appendTo($("#mytr1"+a));
-                    var $mth = $('<td>'+ detail[i]["topic"] +'</td>');
+                    var $mth = $('<td></td>');
+                    for(var j = 0; j < detail[i]["begin"].length; j++){
+                        var $msp = $('<span style="background-color: '+ detail[i]["begin"][j]["color"] +'">'+ detail[i]["begin"][j]["topic"] +'</span>&nbsp;');
+                        var $comma = $('<span>,</span>');
+                        $msp.appendTo($mth);
+                        $comma.appendTo($mth);
+                    }
+//                    var $mth = $('<td>'+ detail[i]["begin"] +'</td>');
                     $mth.appendTo($("#mytr2"+a));
                 }
             }
@@ -189,13 +250,21 @@
             $tr1.appendTo($("#bodytr"));
             $tr2.appendTo($("#bodytr"));
             for(var i=n*9; i < detail.length; i++){
-                var $mthead = $('<th class="myTh">'+ detail[i]["module"] +'</th>');
+                var $mthead = $('<th class="myTh"><a href="http://localhost:8080/stackMWE/'+ content[4]+ '/' +content[5] +'/'+ detail[i]["module"] +'">'+ detail[i]["module"] +'</a></th>');
                 $mthead.appendTo($("#mytr1end"));
-                var $mth = $('<td>'+ detail[i]["topic"] +'</td>');
+                var $mth = $('<td></td>');
+                for(var j = 0; j < detail[i]["begin"].length; j++){
+                    var $msp = $('<span style="background-color: '+ detail[i]["begin"][j]["color"] +'">'+ detail[i]["begin"][j]["topic"] +'</span>&nbsp;');
+                    var $comma = $('<span>,</span>');
+                    $msp.appendTo($mth);
+                    $comma.appendTo($mth);
+                }
+//                var $mth = $('<td>'+ detail[i]["begin"] +'</td>');
                 $mth.appendTo($("#mytr2end"));
             }
 
-        })
+        });
+        document.getElementById("go").setAttribute("href", "http://localhost:8080/classTopic/" + content[4] + "/" + content[5])
     }
 
     function geneContent(id) {

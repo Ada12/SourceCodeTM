@@ -15,6 +15,8 @@ public class GetClassTopic {
 
     public static Map<String, Map<String, String>> getClassTopic(String folder, String topicNum) throws IOException {
         String filePath = "/usr/local/mallet-2.0.7/" + folder + "/" + folder + topicNum + "/composition.txt";
+//        String abPath = System.getProperty("user.dir");
+//        String filePath = abPath + "/topicModel/" + folder + "Composite/composition"+ topicNum +".txt";
         File file  = new File(filePath);
         Map<String, Map<String, String>> classTopic = new HashMap<String, Map<String, String>>();
         if(file.exists()) {
@@ -46,6 +48,8 @@ public class GetClassTopic {
     public static Map<String, List<String>> getClassNames(int flag) throws IOException {
         Map<String, List<String>> moduleNames = new HashMap<String, List<String>>();
         if(flag == 2){
+//            String abPath = System.getProperty("user.dir");
+//            File[] files = new File(abPath+"/topicModel/tribestri/").listFiles();
             File[] files = new File("/home/yangchen/ycdoc/topicModel/tribestri/").listFiles();
             List<String> paths = new ArrayList<String>();
             GetClassTopic.setFilePaths(paths);
@@ -70,7 +74,9 @@ public class GetClassTopic {
                 moduleNames.put(moduleName, names);
             }
         }else{
-            File[] files = new File("/home/yangchen/ycdoc/topicModel/tomcatcata/").listFiles();
+//            String abPath = System.getProperty("user.dir");
+//            File[] files = new File(abPath+"/topicModel/tomcatcata/").listFiles();
+            File[] files = new File("/home/yangchen/ycdoc/topicModel/catalinacata/").listFiles();
             List<String> paths = new ArrayList<String>();
             GetClassTopic.setFilePaths(paths);
             showFiles(files);
@@ -100,7 +106,9 @@ public class GetClassTopic {
     public static List<String> getModule(int flag){
         List<String> modules = new ArrayList<String>();
         if(flag == 2){
-            File[] files = new File("/home/yangchen/ycdoc/topicModel/tomcatcata/").listFiles();
+//            String abPath = System.getProperty("user.dir");
+//            File[] files = new File(abPath+"/topicModel/tribestri/").listFiles();
+            File[] files = new File("/home/yangchen/ycdoc/topicModel/tribestri/").listFiles();
             List<String> paths = new ArrayList<String>();
             GetClassTopic.setFilePaths(paths);
             showFiles(files);
@@ -109,7 +117,9 @@ public class GetClassTopic {
                 modules.add(module);
             }
         }else{
-            File[] files = new File("/home/yangchen/ycdoc/topicModel/tomcatcata/").listFiles();
+//            String abPath = System.getProperty("user.dir");
+//            File[] files = new File(abPath+"/topicModel/tomcatcata/").listFiles();
+            File[] files = new File("/home/yangchen/ycdoc/topicModel/catalinacata/").listFiles();
             List<String> paths = new ArrayList<String>();
             GetClassTopic.setFilePaths(paths);
             showFiles(files);
@@ -124,10 +134,10 @@ public class GetClassTopic {
     private static void showFiles(File[] files) {
         for(File file : files){
             if(file.isDirectory()){
-                System.out.println("Directory: " + file.getName());
+//                System.out.println("Directory: " + file.getName());
                 showFiles(file.listFiles());
             }else{
-                System.out.println(file.getAbsolutePath());
+//                System.out.println(file.getAbsolutePath());
                 filePaths.add(file.getAbsolutePath());
             }
         }
